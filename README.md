@@ -13,7 +13,7 @@
 	<li>I+D(Documentación):  Login: Google, Facebook, Twitter, OpenID, BioID</li>
 </ul>
   
-<p1>The MIT License (MIT)</p1>
+<h1>The MIT License (MIT)</h1>
 	
 Copyright (c) 2015
 
