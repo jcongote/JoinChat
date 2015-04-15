@@ -29,25 +29,23 @@
 */
 
 // var chatId = false;
-var chatId = '111112';
+var chatId = '12345';
 var localStream, remoteStream, pc, ws, channel;
 $(document).ready(function() {
     ws = new WebSocket('ws://kladfelipe.koding.io:7000/ws/' + chatId);
-    var configuration = {iceServers: [
-        { url: 'stun:kladfelipe.koding.io:3478' },
-        {
-            url: 'turn:kladfelipe.koding.io:3978',
-            username: 'turnserver',
-            credential: 'hieKedq'
-        }
-    ]};
+
+    ws.onopen = function(){
+        console.info("Websocket abierto");
+    }
+    ws.onclose = function (evt){
+        console.error("Websockect cerrado");
+    }
     var initiator;
-    pc = new webkitRTCPeerConnection(configuration, {optional: [{RtpDataChannels: true}]});
+    var initiatorCall;
 
     $(window).bind('beforeunload', function(){
         if (pc && pc.close) {
-            channel.close();
-            pc.close();
+            ws.close();
         }
     });
 
@@ -69,6 +67,49 @@ $(document).ready(function() {
     ws.onmessage = initiatorCtrl;
 
     function init() {
+        $("#video-btn").prop( "disabled", true );
+        var configuration = {iceServers: [
+            { url: 'stun:kladfelipe.koding.io:3478' },
+            {
+                url: 'turn:kladfelipe.koding.io:3479',
+                username: 'turnserver',
+                credential: 'hieKedq'
+            }
+        ]};
+
+        pc = new webkitRTCPeerConnection(configuration, {optional: [{RtpDataChannels: true}]});
+
+        pc.onaddstream = function(event) {
+            console.log('REMOTE STREAM ADDED');
+            console.info("InitiatorCall starts the function onaddStream in: " + initiatorCall);
+            remoteStream = event.stream;
+            if (remoteStream) {
+                $('#remote').attachStream(event.stream);
+            }else{
+                console.info("Initiator starts the function onaddStream in: " + initiator);
+            }
+            logStreaming(true);
+            
+            if (!localStream) {
+                $('#video-btn').click();
+            }
+        };
+
+        pc.onicecandidate = function(event) {
+            console.info("Ice candidate added!");
+            if (event.candidate) {
+                ws.send(JSON.stringify(event.candidate));
+            }
+        };
+
+        pc.ondatachannel = function(evt){
+            channel = evt.channel;
+
+            channel.onopen = channelOnOpen;
+            channel.onmessage = channelOnMessage;
+            channel.onclose = channelOnClose;
+        };
+
         var channelOnMessage = function (evt) {
             var objReceived = JSON.parse(evt.data);
             if (objReceived.command) {
@@ -85,64 +126,55 @@ $(document).ready(function() {
                 createMsg(false, msg);
             }  
         };
+
         var channelOnOpen = function () {
             console.log("Channel " + channel.label + " is open");
             enableChatFields();
         };
+
         var channelOnClose = function (evt) {
             console.log('RTCDataChannel closed.');
         };
 
         if (initiator) {
             var channelOptions = { reliable: false };
-            channel = pc.createDataChannel("chat" + chatId, channelOptions);
-
+            if (typeof(channel) == "undefined" || channel == null) {
+                channel = pc.createDataChannel("chat" + chatId, channelOptions);  
+            };
             channel.onmessage = channelOnMessage;
             channel.onopen = channelOnOpen;
             channel.onclose = channelOnClose;
-        } else {
-            pc.ondatachannel = function(evt){
-                channel = evt.channel;
-
-                channel.onopen = channelOnOpen;
-                channel.onmessage = channelOnMessage;
-                channel.onclose = channelOnClose;
-            };
         }
         connect();
     }
 
     function connect(stream) {
-        pc.onaddstream = function(event) {
-            console.log('REMOTE STREAM ADDED');
-            remoteStream = event.stream;
-            $('#remote').attachStream(event.stream);
-            logStreaming(true);
-            
-            if (!localStream) {
-                $('#video-btn').click();
-            }
-        };
-        // pc.onremovestream = function(event) {
-        //     $('#remote').removeStream(event.stream);
-        //     logStreaming(false);
-        // };
-
-        pc.onicecandidate = function(event) {
-            if (event.candidate) {
-                ws.send(JSON.stringify(event.candidate));
-            }
-        };
         ws.onmessage = function (event) {
-            var signal = JSON.parse(event.data);
-            if (signal.sdp) {
+            if (event.data == "not initiator") {
+                console.info(event.data);
+                initiator = true;
+                if (typeof(channel) != "undefined" && channel != null){
+                    channel.close();
+                    pc.close();
+                    channel = null;
+                    pc = null;
+                };
+                init();
+            }
+            else{
                 if (initiator) {
-                    receiveAnswer(signal);
-                } else {
-                    receiveOffer(signal);
+                    $("#video-btn").prop( "disabled", false );
+                };
+                var signal = JSON.parse(event.data);
+                if (signal.sdp) {
+                    if (initiator) {
+                        receiveAnswer(signal);
+                    } else {
+                        receiveOffer(signal);
+                    }
+                } else if (signal.candidate) {
+                    pc.addIceCandidate(new RTCIceCandidate(signal));
                 }
-            } else if (signal.candidate) {
-                pc.addIceCandidate(new RTCIceCandidate(signal));
             }
         };
 
@@ -159,9 +191,30 @@ $(document).ready(function() {
             localStream = stream;
             pc.addStream(stream);
             $('#local').attachStream(stream);
+        };
+        if (typeof(remoteStream) == "undefined") {
+            initiatorCall = false;
+        };
+        ws.onmessage = function (event) {
+            var signal = JSON.parse(event.data);
+            if (signal.sdp) {
+                if (initiatorCall) {
+                    receiveAnswer(signal);
+                }else {
+                    receiveOffer(signal);
+                }
+            } else if (signal.candidate) {
+                pc.addIceCandidate(new RTCIceCandidate(signal));
+            }
         }
 
-        createOffer();
+        if (initiatorCall) {
+            log('waiting for remote camera...');
+        }else{
+            console.info("crea una oferta");
+            createOffer();
+        }
+        console.info("InitiatorCall ended the function enableVideo in: " + initiatorCall);
     }
 
 
@@ -172,7 +225,9 @@ $(document).ready(function() {
             pc.setLocalDescription(offer, function() {
                 log('sending to remote...');
                 initiator = true;
+                initiatorCall = true;
                 console.info(offer);
+                console.info("InitiatorCall was in the function createOffer: " + initiatorCall);
                 ws.send(JSON.stringify(offer));
             }, fail);
         }, fail);
@@ -188,7 +243,9 @@ $(document).ready(function() {
                 pc.setLocalDescription(answer, function() {
                     log('sent answer');
                     initiator = false;
+                    initiatorCall = false;
                     console.info(answer);
+                    console.info("InitiatorCall was in the function receiveOffer: " + initiatorCall);
                     ws.send(JSON.stringify(answer));
                 }, fail);
             }, fail);
@@ -198,6 +255,7 @@ $(document).ready(function() {
 
     function receiveAnswer(answer) {
         log('received answer');
+        console.info("InitiatorCall was in the function receiveAnswer: " + initiatorCall);
         pc.setRemoteDescription(new RTCSessionDescription(answer));
     }
 
@@ -228,6 +286,8 @@ $(document).ready(function() {
             msg: $("#msg").val()
         };
         channel.send(JSON.stringify(objToSend));
+        console.log(JSON.stringify(objToSend));
+        console.log(JSON.stringify(objToSend).msg);
         createMsg(true, $("#msg").val());
         $("#msg").val("");
     }
@@ -260,6 +320,11 @@ $(document).ready(function() {
     };
 
     $('#video-btn').click(function(event) {
+        if (initiator) {
+            initiator = false;
+        };
+        initiatorCall = true;
+        console.info("InitiatorCall starts in " + initiatorCall);
         if (!$(this).hasClass('active')) {
             MediaStreamTrack.getSources(function (media_sources) {
                 var constraints = {};
@@ -276,7 +341,6 @@ $(document).ready(function() {
                         constraints.video = true;
                     }
                 }
-
                 getUserMedia(constraints, enableVideo, fail);
             });
         } else {
@@ -284,9 +348,10 @@ $(document).ready(function() {
                 pc.close();
             }
         }
-
+        initiatorCall = false;
         $('#videochat').slideToggle();
         $(this).toggleClass('active');
+        console.info("InitiatorCall ended the functios videoBtnClick in " + initiatorCall);
     });
 });
 

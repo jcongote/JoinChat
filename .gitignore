@@ -2,3 +2,4 @@
 /nbproject/
 .project
 .buildpath
+phpApp/app/tmp/cache/
