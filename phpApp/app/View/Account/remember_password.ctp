@@ -29,7 +29,7 @@
  * THE SOFTWARE.
  */
 
-    $title = 'Recordar contraseña';
+    $title = 'Recordar clave';
     $this->assign('title', $title);
 ?>
 <div class="panel panel-primary">

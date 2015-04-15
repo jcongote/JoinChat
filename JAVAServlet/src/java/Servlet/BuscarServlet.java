@@ -45,6 +45,7 @@ public class BuscarServlet extends HttpServlet {
             if (format.equals("json")) {
                 JSONObject json = new JSONObject();
                 json.put("success", false);
+                json.put("message","Email que no pertenece a ningun usuario registrado");
                 out.print(json);
                
                 

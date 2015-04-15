@@ -9,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.simple.JSONObject;
 
 public class EliminarServlet extends HttpServlet {
 
@@ -28,15 +29,28 @@ public void doPost(HttpServletRequest request, HttpServletResponse response)
  
       int i = pst.executeUpdate();
       if(i!=0){
-        pw.println("<br>USUARIO ELIMINADO");          
+          String format = request.getParameter("format");
+       if (format.equals("json")) {
+                JSONObject json = new JSONObject();
+                json.put("success", true);
+                json.put("message","Usuario Eliminado");
+                pw.print(json);
+            }
+                 
       }
       else{
-        pw.println("<br>ERROR AL ELIMINAR");
+         String format = request.getParameter("format");
+            if (format.equals("json")) {
+                JSONObject json = new JSONObject();
+                json.put("success", false);
+                json.put("message","Error al Eliminar");
+                pw.print(json);
        }
     }
-    catch (Exception e){
+    }catch (Exception e){
       pw.println(e);
     }
+    pw.close();
   }
 }
 

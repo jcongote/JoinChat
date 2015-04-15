@@ -62,4 +62,32 @@ class AppController extends Controller {
     public function isAuthorized($usuario) {
         return true;
     }
+
+    protected function _checkDatabase($url, $method = 'POST') {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 1);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+        switch ($method) {
+            case 'POST':
+                curl_setopt($ch, CURLOPT_POST, true);
+                break;
+            case 'GET':
+            default:
+                break;
+        }
+
+        $data = curl_exec($ch);
+        $headers = curl_getinfo($ch);
+
+        curl_close($ch);
+
+        $status = $headers['http_code'];
+        if ($status == '200'){
+            return true;
+        }
+        return false;
+    }
 }

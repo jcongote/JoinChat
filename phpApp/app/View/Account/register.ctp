@@ -39,26 +39,34 @@
 ?>
 <script type="text/javascript">
     $(document).ready(function() {
-        $("#UserLoginGuestForm").validate({
+        $("#UserRegisterForm").validate({
             rules: {
                 "data[User][username]": {
                     required: true,
                     minlength: 3
                 },
-                "data[User][alias]": {
+                "data[User][nickname]": {
                     required: true,
                     minlength: 3
                 },
                 "data[User][email]": {
                     required: true,
                     email: true
+                },
+                "data[User][password]": {
+                    required: true,
+                    maxlength: 10
+                },
+                "data[User][passwordConfirm]": {
+                    equalTo: "#UserPassword",
+                    maxlength: 10
                 }
             },
             submitHandler: function(form) {
                 $(form).find('input[type=submit]').prop('disabled', true);
-                <?php if (!AuthComponent::user()) : ?>
+                <?php if (!AuthComponent::user() || (AuthComponent::user('guest') && AuthComponent::user('guest') === true)) : ?>
                     guest = guest || {};
-                    guest.alias = $("#UserAlias").val();
+                    guest.nickname = $("#UserNickname").val();
                     guest.email = $("#UserEmail").val();
                     db.put('guest', guest, 1);
                 <?php endif; ?>
@@ -84,7 +92,7 @@
             );
             echo $this->Form->input('password', array(
                     'type' => 'password',
-                    'label' => 'Contraseña',
+                    'label' => 'Clave',
                     'class' => 'form-control',
                     'placeholder' => '*********',
                     'div' => array('class' => 'form-group required')
@@ -92,13 +100,13 @@
             );
             echo $this->Form->input('passwordConfirm', array(
                     'type' => 'password',
-                    'label' => 'Confirmación de contraseña',
+                    'label' => 'Confirmación de clave',
                     'class' => 'form-control',
                     'placeholder' => '*********',
                     'div' => array('class' => 'form-group required')
                 )
             );
-            echo $this->Form->input('alias', array(
+            echo $this->Form->input('nickname', array(
                     'label' => 'Alias',
                     'class' => 'form-control',
                     'placeholder' => 'Ej: Joi',

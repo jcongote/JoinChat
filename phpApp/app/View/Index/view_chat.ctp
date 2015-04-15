@@ -29,8 +29,8 @@
  * THE SOFTWARE.
  */
  
-    $userAlias = 'Joi';
-    $title = 'Chat con ' . $userAlias;
+    $userNickname = 'Joi';
+    $title = 'Chat con ' . $userNickname;
     $this->assign('title', $title);
 ?>
 <?php $this->start('script'); ?>
@@ -71,7 +71,7 @@
 
     #videochat video {
         max-width: 300px;
-        max-height: 150px;
+        max-height: 200px;
     }
 </style>
 <?php
@@ -82,7 +82,7 @@
         <div class="col-xs-12">
             <div id="chat" class="panel panel-primary" style="position: relative;">
                 <div class="panel-heading">
-                    <h3 class="panel-title"><?php echo $userAlias; ?><span class="label label-info pull-right">Último mensaje 2015/01/28 01:05pm</span></h3>
+                    <h3 class="panel-title"><?php echo $userNickname; ?><span class="label label-info pull-right">Último mensaje 2015/01/28 01:05pm</span></h3>
                 </div>
                 <div class="panel-body" style="overflow-y: auto;">
                     <div id="videochat" class="row">
@@ -93,22 +93,14 @@
                         </div>
                         <div class="col-md-6 text-center">
                             <video id="remote" autoplay controls>
-                                Cámara de <?php echo $userAlias; ?>
+                                Cámara de <?php echo $userNickname; ?>
                             </video>
                         </div>
                         <div id="video-id" class="col-xs-12 text-center"></div>
-                        <div id="status" style="display: none;" class="col-xs-12"></div>
-                        <div id="streaming" style="display: none;" class="col-xs-12"></div>
+                        <div id="status" style="display: block;" class="col-xs-12"></div>
+                        <div id="streaming" style="display: block;" class="col-xs-12"></div>
                     </div>
-                    <div class="bubble bubble-right">
-                        <div class="pointer"></div>
-                        Qué más pues Nigga? Cómo vas?
-                    </div>
-                    <div class="bubble bubble-left">
-                        <div class="pointer"></div>
-                        Todo bien pa<br>
-                        Vos que
-                    </div>
+                    <div id="textchat"></div>
                 </div>
                 <div class="panel-footer text-right" style="position: absolute; bottom: 0; width: 100%;">
                     <div class="container-fluid">
@@ -118,11 +110,13 @@
                             </div>
                         </div>
                         <div class="row">
-                            <div class="col-xs-11">
-                                <textarea class="form-control"></textarea>
+                            <div class="col-xs-12">
+                                <textarea id="msg" class="form-control" disabled="disabled"></textarea>
                             </div>
-                            <div class="col-xs-1">
-                                <button class="btn btn-success">Enviar</button>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <button id="sendChatBtn" class="btn btn-success" disabled="disabled">Enviar</button>
                             </div>
                         </div>
                     </div>

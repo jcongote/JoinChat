@@ -28,145 +28,261 @@
     THE SOFTWARE.
 */
 
-var videoId = false;
+// var chatId = false;
+var chatId = '111112';
+var localStream, remoteStream, pc, ws, channel;
 $(document).ready(function() {
+    ws = new WebSocket('ws://kladfelipe.koding.io:7000/ws/' + chatId);
+    var configuration = {iceServers: [
+        { url: 'stun:kladfelipe.koding.io:3478' },
+        {
+            url: 'turn:kladfelipe.koding.io:3978',
+            username: 'turnserver',
+            credential: 'hieKedq'
+        }
+    ]};
+    var initiator;
+    pc = new webkitRTCPeerConnection(configuration, {optional: [{RtpDataChannels: true}]});
+
+    $(window).bind('beforeunload', function(){
+        if (pc && pc.close) {
+            channel.close();
+            pc.close();
+        }
+    });
+
+    function initiatorCtrl(event) {
+        console.log(event.data);
+        if (event.data == "fullhouse") {
+            alert("full house");
+        }
+        if (event.data == "initiator") {
+            initiator = false;
+            init();
+        }
+        if (event.data == "not initiator") {
+            initiator = true;
+            init();
+        }
+    }
+
+    ws.onmessage = initiatorCtrl;
+
+    function init() {
+        var channelOnMessage = function (evt) {
+            var objReceived = JSON.parse(evt.data);
+            if (objReceived.command) {
+                var commandParts = objReceived.command.split('.');
+                var args = [];
+                if (objReceived.args) {
+                    args = objReceived.args;
+                }
+                window[commandParts[0]][commandParts[1]](args);
+            }
+            if (objReceived.msg) {
+                var msg = objReceived.msg;
+                console.info(evt);
+                createMsg(false, msg);
+            }  
+        };
+        var channelOnOpen = function () {
+            console.log("Channel " + channel.label + " is open");
+            enableChatFields();
+        };
+        var channelOnClose = function (evt) {
+            console.log('RTCDataChannel closed.');
+        };
+
+        if (initiator) {
+            var channelOptions = { reliable: false };
+            channel = pc.createDataChannel("chat" + chatId, channelOptions);
+
+            channel.onmessage = channelOnMessage;
+            channel.onopen = channelOnOpen;
+            channel.onclose = channelOnClose;
+        } else {
+            pc.ondatachannel = function(evt){
+                channel = evt.channel;
+
+                channel.onopen = channelOnOpen;
+                channel.onmessage = channelOnMessage;
+                channel.onclose = channelOnClose;
+            };
+        }
+        connect();
+    }
+
+    function connect(stream) {
+        pc.onaddstream = function(event) {
+            console.log('REMOTE STREAM ADDED');
+            remoteStream = event.stream;
+            $('#remote').attachStream(event.stream);
+            logStreaming(true);
+            
+            if (!localStream) {
+                $('#video-btn').click();
+            }
+        };
+        // pc.onremovestream = function(event) {
+        //     $('#remote').removeStream(event.stream);
+        //     logStreaming(false);
+        // };
+
+        pc.onicecandidate = function(event) {
+            if (event.candidate) {
+                ws.send(JSON.stringify(event.candidate));
+            }
+        };
+        ws.onmessage = function (event) {
+            var signal = JSON.parse(event.data);
+            if (signal.sdp) {
+                if (initiator) {
+                    receiveAnswer(signal);
+                } else {
+                    receiveOffer(signal);
+                }
+            } else if (signal.candidate) {
+                pc.addIceCandidate(new RTCIceCandidate(signal));
+            }
+        };
+
+        if (initiator) {
+            createOffer();
+        } else {
+            log('waiting for offer...');
+        }
+        logStreaming(false);
+    }
+
+    function enableVideo(stream) {
+        if (stream) {
+            localStream = stream;
+            pc.addStream(stream);
+            $('#local').attachStream(stream);
+        }
+
+        createOffer();
+    }
+
+
+    function createOffer() {
+        log('creating offer...');
+        pc.createOffer(function(offer) {
+            log('created offer...');
+            pc.setLocalDescription(offer, function() {
+                log('sending to remote...');
+                initiator = true;
+                console.info(offer);
+                ws.send(JSON.stringify(offer));
+            }, fail);
+        }, fail);
+    }
+
+
+    function receiveOffer(offer) {
+        log('received offer...');
+        pc.setRemoteDescription(new RTCSessionDescription(offer), function() {
+            log('creating answer...');
+            pc.createAnswer(function(answer) {
+                log('created answer...');
+                pc.setLocalDescription(answer, function() {
+                    log('sent answer');
+                    initiator = false;
+                    console.info(answer);
+                    ws.send(JSON.stringify(answer));
+                }, fail);
+            }, fail);
+        }, fail);
+    }
+
+
+    function receiveAnswer(answer) {
+        log('received answer');
+        pc.setRemoteDescription(new RTCSessionDescription(answer));
+    }
+
+
+    function log() {
+        $('#status').text(Array.prototype.join.call(arguments, ' '));
+        console.log.apply(console, arguments);
+    }
+
+
+    function logStreaming(streaming) {
+        $('#streaming').text(streaming ? '[streaming]' : '[..]');
+    }
+
+
+    function fail() {
+        if (arguments[0].name == "PermissionDeniedError") {
+            alert("No permitiste compartir multimedia");
+        } else {
+            $('#status').text(Array.prototype.join.call(arguments, ' '));
+            $('#status').addClass('error');
+            console.error.apply(console, arguments);
+        }
+    }
+
+    function sendChatMessage() {
+        var objToSend = {
+            msg: $("#msg").val()
+        };
+        channel.send(JSON.stringify(objToSend));
+        createMsg(true, $("#msg").val());
+        $("#msg").val("");
+    }
+
+    $("#sendChatBtn").on('click', function() {
+        sendChatMessage();
+    });
+
+    var keydown, lastKeydown;
+    $("#msg").on('keydown', function(event) {
+        if (keydown && (lastKeydown !== keydown)) {
+            lastKeydown = keydown;
+        } 
+        keydown = event.which;
+    });
+    $("#msg").on('keypress', function(event) {
+        // 16 - Shift
+        // 13 - Enter
+        if (lastKeydown !== 16 && keydown === event.which && keydown == 13) {
+            sendChatMessage();
+            event.preventDefault();
+        }
+    });
+
+    jQuery.fn.attachStream = function(stream) {
+        this.each(function() {
+            this.src = URL.createObjectURL(stream);
+            this.play();
+        });
+    };
+
     $('#video-btn').click(function(event) {
         if (!$(this).hasClass('active')) {
-            if (videoId === false) {
-                var generateNewVideo = confirm('¿Desea invitar a su contacto a una video llamada?');
-                if (generateNewVideo) {
-                    videoId = randomString();
-                } else {
-                    videoId = prompt("Ingrese el identificador de la video llamada a la que se quiere unir");
-                }
-            }
-            $("#video-id").html("Código del video: <b>" + videoId + "</b>");
-            
-            var ws = new WebSocket('ws://negly14.koding.io:7000/ws/' + videoId);
-            ws.onmessage = initiatorCtrl;
-            var configuration = {iceServers: [{ url: 'stun:negly14.koding.io:3478' }]};
-            var initiator;
-            var pc = new webkitRTCPeerConnection(configuration, {optional: [{RtpDataChannels: true}]});
+            MediaStreamTrack.getSources(function (media_sources) {
+                var constraints = {};
+                for (var i = 0; i < media_sources.length; i++) {
+                    var media_source = media_sources[i];
 
-            function initiatorCtrl(event) {
-                console.log(event.data);
-                if (event.data == "fullhouse") {
-                    alert("full house");
-                }
-                if (event.data == "initiator") {
-                    initiator = false;
-                    init();
-                }
-                if (event.data == "not initiator") {
-                    initiator = true;
-                    init();
-                }
-            }
-
-            function init() {
-                var constraints = {
-                    audio: true,
-                    video: true
-                };
-                getUserMedia(constraints, connect, fail);
-            }
-
-            function connect(stream) {
-                // pc = new RTCPeerConnection();
-                // pc = webkitRTCPeerConnection(configuration, {optional: [{RtpDataChannels: true}]});
-                if (stream) {
-                    pc.addStream(stream);
-                    $('#local').attachStream(stream);
-                }
-
-                pc.onaddstream = function(event) {
-                    $('#remote').attachStream(event.stream);
-                    logStreaming(true);
-                };
-                pc.onicecandidate = function(event) {
-                    if (event.candidate) {
-                        ws.send(JSON.stringify(event.candidate));
+                    // if audio device
+                    if (media_source.kind == 'audio') {
+                        constraints.audio = true;
                     }
-                };
-                ws.onmessage = function (event) {
-                    var signal = JSON.parse(event.data);
-                    if (signal.sdp) {
-                        if (initiator) {
-                            receiveAnswer(signal);
-                        } else {
-                            receiveOffer(signal);
-                        }
-                    } else if (signal.candidate) {
-                        pc.addIceCandidate(new RTCIceCandidate(signal));
+
+                    // if video device
+                    if (media_source.kind == 'video') {
+                        constraints.video = true;
                     }
-                };
-
-                if (initiator) {
-                    createOffer();
-                } else {
-                    log('waiting for offer...');
                 }
-                logStreaming(false);
+
+                getUserMedia(constraints, enableVideo, fail);
+            });
+        } else {
+            if (pc && pc.close) {
+                pc.close();
             }
-
-
-            function createOffer() {
-                log('creating offer...');
-                pc.createOffer(function(offer) {
-                    log('created offer...');
-                    pc.setLocalDescription(offer, function() {
-                        log('sending to remote...');
-                        ws.send(JSON.stringify(offer));
-                    }, fail);
-                }, fail);
-            }
-
-
-            function receiveOffer(offer) {
-                log('received offer...');
-                pc.setRemoteDescription(new RTCSessionDescription(offer), function() {
-                    log('creating answer...');
-                    pc.createAnswer(function(answer) {
-                        log('created answer...');
-                        pc.setLocalDescription(answer, function() {
-                            log('sent answer');
-                            ws.send(JSON.stringify(answer));
-                        }, fail);
-                    }, fail);
-                }, fail);
-            }
-
-
-            function receiveAnswer(answer) {
-                log('received answer');
-                pc.setRemoteDescription(new RTCSessionDescription(answer));
-            }
-
-
-            function log() {
-                $('#status').text(Array.prototype.join.call(arguments, ' '));
-                console.log.apply(console, arguments);
-            }
-
-
-            function logStreaming(streaming) {
-                $('#streaming').text(streaming ? '[streaming]' : '[..]');
-            }
-
-
-            function fail() {
-                $('#status').text(Array.prototype.join.call(arguments, ' '));
-                $('#status').addClass('error');
-                console.error.apply(console, arguments);
-            }
-
-
-            jQuery.fn.attachStream = function(stream) {
-                this.each(function() {
-                    this.src = URL.createObjectURL(stream);
-                    this.play();
-                });
-            };
         }
 
         $('#videochat').slideToggle();
@@ -183,4 +299,22 @@ function randomString() {
         randomstring += chars.substring(rnum,rnum+1);
     }
     return randomstring;
+}
+
+function createMsg(localUser, msg) {
+    var containerClass;
+    if (!localUser) {
+        containerClass = 'bubble-left';
+    } else {
+        containerClass = 'bubble-right';
+    }
+
+    $msgContainer = $("<div>").addClass('bubble').addClass(containerClass).html("<div class='pointer'></div>" + msg.replace(/(\r[\n]?)|(\n[\r]?)/, "<br>"));
+    
+    $("#textchat").append($msgContainer);
+}
+
+function enableChatFields() {
+    $("#msg").prop('disabled', false);
+    $("#sendChatBtn").prop('disabled', false);
 }

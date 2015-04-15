@@ -9,6 +9,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.json.simple.JSONObject;
 
 public class RegistroServlet extends HttpServlet {
 
@@ -34,15 +35,30 @@ public void doPost(HttpServletRequest request, HttpServletResponse response)
  
       int i = pst.executeUpdate();
       if(i!=0){
-        pw.println("<br>USUARIO REGISTRADO");          
+       String format = request.getParameter("format");
+       if (format.equals("json")) {
+                JSONObject json = new JSONObject();
+                json.put("success", true);
+                json.put("message","Usuario Registrado");
+                pw.print(json);
+            }
+          
+               
       }
       else{
-        pw.println("<br>ERROR AL INSERTAR");
+        String format = request.getParameter("format");
+            if (format.equals("json")) {
+                JSONObject json = new JSONObject();
+                json.put("success", false);
+                json.put("message","Error al Regristrar");
+                pw.print(json);
        }
+    }
     }
     catch (Exception e){
       pw.println(e);
     }
+    pw.close();
   }
 }
 

@@ -90,7 +90,7 @@ THE SOFTWARE. -->
                     autoIncrement: false,
                     indexes: [
                         {
-                            name: 'alias'
+                            name: 'nickname'
                         },
                         {
                             name: 'email'
@@ -117,8 +117,8 @@ THE SOFTWARE. -->
                 }
 
                 function guestFound() {
-                    if ($userAlias = $("#UserAlias")) {
-                        $userAlias.val(guest.alias);
+                    if ($userNickname = $("#UserNickname")) {
+                        $userNickname.val(guest.nickname);
                     }
                     if ($userEmail = $("#UserEmail")) {
                         $userEmail.val(guest.email);

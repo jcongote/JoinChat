@@ -30,20 +30,22 @@
  */
 
     $this->assign('title', 'Configuración');
+
+    $user = AuthComponent::user();
 ?>
 <h3>Mi Perfil</h3>
 <div class="list-group">
     <div class="list-group-item">
         <h4 class="list-group-item-heading">Alias (Apodo)</h4>
-        <div class="list-group-item-text">Joi</div>
+        <div class="list-group-item-text"><?php echo $user['nickname'] ?></div>
     </div>
     <div class="list-group-item">
         <h4 class="list-group-item-heading">Usuario</h4>
-        <div class="list-group-item-text">joinnerovalle</div>
+        <div class="list-group-item-text"><?php echo $user['usuario'] ?></div>
     </div>
     <div class="list-group-item">
         <h4 class="list-group-item-heading">Correo</h4>
-        <div class="list-group-item-text">joinner@gmail.com</div>
+        <div class="list-group-item-text"><?php echo $user['email'] ?></div>
     </div>
 </div>
 <?php

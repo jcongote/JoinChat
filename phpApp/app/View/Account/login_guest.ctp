@@ -41,7 +41,7 @@
     $(document).ready(function() {
         $("#UserLoginGuestForm").validate({
             rules: {
-                "data[User][alias]": {
+                "data[User][nickname]": {
                     required: true,
                     minlength: 3
                 },
@@ -53,7 +53,7 @@
             submitHandler: function(form) {
                 $(form).find('input[type=submit]').prop('disabled', true);
                 guest = guest || {};
-                guest.alias = $("#UserAlias").val();
+                guest.nickname = $("#UserNickname").val();
                 guest.email = $("#UserEmail").val();
                 db.put('guest', guest, 1);
                 form.submit();
@@ -69,7 +69,7 @@
     <div class="panel-body">
         <?php
             echo $this->Form->create('User');
-            echo $this->Form->input('alias', array(
+            echo $this->Form->input('nickname', array(
                     'label' => 'Alias',
                     'class' => 'form-control',
                     'placeholder' => 'Ej: Joi',

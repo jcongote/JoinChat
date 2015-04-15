@@ -14,6 +14,7 @@
                     <td>Usuario:</td>  
                     <td><input type="text" name="username" required="required" /></td>  
                 </tr>
+                <input type="hidden" value="json" name="format" />
                 <tr>  
                     <td><input type="submit" value="Eliminar" /></td>  
                 </tr>  

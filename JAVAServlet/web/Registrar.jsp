@@ -53,7 +53,8 @@ THE SOFTWARE. -->
                 <tr>  
                     <td>Email:</td>  
                     <td><input type="text" name="email" required="required" /></td>  
-                </tr>  
+                </tr>
+                <input type="hidden" value="json" name="format" />
                 <tr>  
                     <td><input type="submit" value="ACEPTAR" /></td>  
                 </tr>  

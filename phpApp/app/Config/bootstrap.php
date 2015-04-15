@@ -113,3 +113,7 @@ CakeLog::config('error', array(
 	'types' => array('warning', 'error', 'critical', 'alert', 'emergency'),
 	'file' => 'error',
 ));
+
+App::uses('IniReader', 'Configure');
+Configure::config('ini', new IniReader());
+Configure::load('JoinChatConfig', 'ini');

@@ -58,33 +58,53 @@ THE SOFTWARE. -->
                     
                     $links[$activeOption]['class'] = 'active';
 
-                    $links['index']['html'] = $this->Html->link(
-                        $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-home btn btn-primary')) . $this->Html->tag('span', 'Inicio'),
-                        '/index',
-                        array('escape' => false, 'class' => $links['index']['class'])
-                    );
-                    $links['newchat']['html'] = $this->Html->link(
-                        $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-plus btn btn-primary')) . $this->Html->tag('span', 'Nueva conversación'),
-                        '#',
-                        array('escape' => false, 'class' => $links['newchat']['class'], 'data-toggle' => 'modal', 'data-target' => '#new-chat-modal')
-                    );
-                    $links['chats']['html'] = $this->Html->link(
-                        $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-comment btn btn-primary')) . $this->Html->tag('span', 'Mis conversaciones'),
-                        '/index/chats',
-                        array('escape' => false, 'class' => $links['chats']['class'])
-                    );
-                    $links['settings']['html'] = $this->Html->link(
-                        $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-wrench btn btn-primary')) . $this->Html->tag('span', 'Configuración'),
-                        '/account/settings',
-                        array('escape' => false, 'class' => $links['settings']['class'])
-                    );
-
+                    $guest = false;
                     if (AuthComponent::user('guest') && AuthComponent::user('guest') === true) {
+                        $guest = true;
                         $links['register']['html'] = '<li>' . $this->Html->link(
                             $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-log-in btn btn-primary')) . $this->Html->tag('span', 'Registrarme'),
                             '/account/register',
                             array('escape' => false, 'class' => $links['register']['class'])
                         ) . '</li>';
+                    }
+
+                    if ($guest) {
+                        $links['newchat']['html'] = $this->Html->link(
+                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-plus btn btn-primary')) . $this->Html->tag('span', 'Nueva conversación'),
+                            '#',
+                            array('escape' => false, 'class' => $links['newchat']['class'], 'data-toggle' => 'modal', 'data-target' => '#guest-modal')
+                        );
+                        $links['chats']['html'] = $this->Html->link(
+                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-comment btn btn-primary')) . $this->Html->tag('span', 'Mis conversaciones'),
+                            '#',
+                            array('escape' => false, 'class' => $links['chats']['class'], 'data-toggle' => 'modal', 'data-target' => '#guest-modal')
+                        );
+                        $links['settings']['html'] = $this->Html->link(
+                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-wrench btn btn-primary')) . $this->Html->tag('span', 'Configuración'),
+                            '#',
+                            array('escape' => false, 'class' => $links['settings']['class'], 'data-toggle' => 'modal', 'data-target' => '#guest-modal')
+                        );
+                    } else {
+                        $links['index']['html'] = $this->Html->link(
+                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-home btn btn-primary')) . $this->Html->tag('span', 'Inicio'),
+                            '/index',
+                            array('escape' => false, 'class' => $links['index']['class'])
+                        );
+                        $links['newchat']['html'] = $this->Html->link(
+                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-plus btn btn-primary')) . $this->Html->tag('span', 'Nueva conversación'),
+                            '#',
+                            array('escape' => false, 'class' => $links['newchat']['class'], 'data-toggle' => 'modal', 'data-target' => '#new-chat-modal')
+                        );
+                        $links['chats']['html'] = $this->Html->link(
+                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-comment btn btn-primary')) . $this->Html->tag('span', 'Mis conversaciones'),
+                            '/index/chats',
+                            array('escape' => false, 'class' => $links['chats']['class'])
+                        );
+                        $links['settings']['html'] = $this->Html->link(
+                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-wrench btn btn-primary')) . $this->Html->tag('span', 'Configuración'),
+                            '/account/settings',
+                            array('escape' => false, 'class' => $links['settings']['class'])
+                        );
                     }
 
                     echo <<<NAV
@@ -125,12 +145,22 @@ NAV;
                 <?php 
                     $flashMsg = $this->Session->flash();
                     $authMsg = $this->Session->flash('auth');
+                    $warnMsg = $this->Session->flash('warning');
 
                     if ($flashMsg) :
                 ?>
                 <div class="alert alert-dismissible alert-info">
                     <button type="button" class="close" data-dismiss="alert">×</button>
                     <?php echo $flashMsg; ?>
+                </div>
+                <?php 
+                    endif;
+
+                    if ($warnMsg) :
+                ?>
+                <div class="alert alert-dismissible alert-warning">
+                    <button type="button" class="close" data-dismiss="alert">×</button>
+                    <?php echo $warnMsg; ?>
                 </div>
                 <?php 
                     endif;
@@ -159,7 +189,7 @@ NAV;
                     <div class="modal-body">
                         <?php
                             // echo $this->Form->create($model = 'Contact', $options = array('type' => 'get', 'url' => array('controller' => 'contacts', 'action' => 'search')));
-                            echo $this->Form->input('aliasEmail', array(
+                            echo $this->Form->input('nicknameEmail', array(
                                     'type' => 'text',
                                     'label' => 'Alias / Correo',
                                     'class' => 'form-control',
@@ -206,6 +236,23 @@ NAV;
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="guest-modal" tabindex="-1" role="dialog" aria-labelledby="guest-modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">¡Aún eres un invitado!</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Para poder acceder a este link debes registrarte primero. Te invitamos a que te registres en este <?php echo $this->Html->link(
+                            'link',
+                            '/account/register',
+                            array('class' => $links['register']['class'])
+                        ) ?></p>
+                    </div>
+                </div>
+            </div>
+        </div>
         <?php
             echo $this->Html->script('jquery-1.11.2.min');
             echo $this->Html->script('bootstrap.min');
@@ -222,55 +269,57 @@ NAV;
                 });
             });
 
-            var guest, db;
+            <?php if (AuthComponent::user('guest') && AuthComponent::user('guest') == true) : ?>
+                var guest, db;
 
-            $(document).ready(function() {
-                var schema = {
-                  autoSchema: false,
-                  stores: [{
-                    name: 'guest',
-                    autoIncrement: false,
-                    indexes: [
-                        {
-                            name: 'alias'
-                        },
-                        {
-                            name: 'email'
-                        }
-                    ]
-                  }]
-                };
-                db = new ydn.db.Storage('joinchat', schema);
-
-                function init() {
-                    db.get('guest', 1)
-                        .done(function(record) {
-                            if (record) {
-                                guest = record;
-                                guestFound = guestFound || function() {};
-                                if (guestFound) {
-                                    guestFound();
-                                }
+                $(document).ready(function() {
+                    var schema = {
+                      autoSchema: false,
+                      stores: [{
+                        name: 'guest',
+                        autoIncrement: false,
+                        indexes: [
+                            {
+                                name: 'nickname'
+                            },
+                            {
+                                name: 'email'
                             }
-                        })
-                        .fail(function(e) {
-                            console.log(e.message);
-                        });
-                }
+                        ]
+                      }]
+                    };
+                    db = new ydn.db.Storage('joinchat', schema);
 
-                function guestFound() {
-                    if ($userAlias = $("#UserAlias")) {
-                        $userAlias.val(guest.alias);
+                    function init() {
+                        db.get('guest', 1)
+                            .done(function(record) {
+                                if (record) {
+                                    guest = record;
+                                    guestFound = guestFound || function() {};
+                                    if (guestFound) {
+                                        guestFound();
+                                    }
+                                }
+                            })
+                            .fail(function(e) {
+                                console.log(e.message);
+                            });
                     }
-                    if ($userEmail = $("#UserEmail")) {
-                        $userEmail.val(guest.email);
-                    }
-                }
 
-                db.onReady(function() {
-                  init();
+                    function guestFound() {
+                        if ($userNickname = $("#UserNickname")) {
+                            $userNickname.val(guest.nickname);
+                        }
+                        if ($userEmail = $("#UserEmail")) {
+                            $userEmail.val(guest.email);
+                        }
+                    }
+
+                    db.onReady(function() {
+                      init();
+                    });
                 });
-            });
+            <?php endif; ?>
         </script>
         <?php echo $this->fetch('script'); ?>
     </body>

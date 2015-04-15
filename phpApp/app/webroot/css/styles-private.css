@@ -162,6 +162,19 @@
     display: none;
 }
 
+div.form-group.required label {
+    font-weight: bold;
+}
+
+div.form-group.required label:first-child:after {
+    content: " *";
+    color: orange;
+}
+
+div.form-group label.error {
+    color: orange;
+}
+
 @media(max-width: 767px) {
     .helper-brand {
         display: inline-block !important;

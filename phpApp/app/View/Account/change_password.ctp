@@ -31,27 +31,57 @@
 
     $title = 'Cambiar clave';
     $this->assign('title', $title);
+
+    $this->start('script');
+
+    echo $this->Html->script('jquery.validate.min');
+    echo $this->Html->script('localization/jquery-validate-es.min');
 ?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#UserChangePasswordForm").validate({
+            rules: {
+                "data[User][oldPassword]": {
+                    required: true,
+                    maxlength: 10
+                },
+                "data[User][password]": {
+                    required: true,
+                    maxlength: 10
+                },
+                "data[User][passwordConfirm]": {
+                    equalTo: "#UserPassword",
+                    maxlength: 10
+                }
+            },
+            submitHandler: function(form) {
+                $(form).find('input[type=submit]').prop('disabled', true);
+                form.submit();
+            }
+        });
+    });
+</script>
+<?php $this->end(); ?>
 <h3><?php echo $title; ?></h3>
 <?php
     echo $this->Form->create('User');
     echo $this->Form->input('oldPassword', array(
             'type' => 'password',
-            'label' => 'Contraseña actual',
+            'label' => 'Clave actual',
             'class' => 'form-control',
             'div' => array('class' => 'form-group')
         )
     );
     echo $this->Form->input('password', array(
             'type' => 'password',
-            'label' => 'Nueva contraseña',
+            'label' => 'Nueva clave',
             'class' => 'form-control',
             'div' => array('class' => 'form-group')
         )
     );
     echo $this->Form->input('passwordConfirm', array(
             'type' => 'password',
-            'label' => 'Confirmación de nueva contraseña',
+            'label' => 'Confirmación de nueva clave',
             'class' => 'form-control',
             'div' => array('class' => 'form-group')
         )

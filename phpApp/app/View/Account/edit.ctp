@@ -30,11 +30,37 @@
  */
     $title = 'Editar Perfil';
     $this->assign('title', $title);
+
+    $this->start('script');
+
+    echo $this->Html->script('jquery.validate.min');
+    echo $this->Html->script('localization/jquery-validate-es.min');
 ?>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $("#UserEditForm").validate({
+            rules: {
+                "data[User][nickname]": {
+                    required: true,
+                    minlength: 3
+                },
+                "data[User][email]": {
+                    required: true,
+                    email: true
+                }
+            },
+            submitHandler: function(form) {
+                $(form).find('input[type=submit]').prop('disabled', true);
+                form.submit();
+            }
+        });
+    });
+</script>
+<?php $this->end(); ?>
 <h3><?php echo $title; ?></h3>
 <?php
     echo $this->Form->create('User');
-    echo $this->Form->input('alias', array(
+    echo $this->Form->input('nickname', array(
             'label' => 'Alias',
             'class' => 'form-control',
             'placeholder' => 'Ej: Joi',

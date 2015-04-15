@@ -6,18 +6,19 @@
 <title>Actualizar Nickname</title>  
 </head>  
 <body>  
-    <form action="ActualizarServlet" method="post">  
+    <form action="StatusServlet" method="post">  
         <fieldset style="width: 300px">  
-            <legend>ACTUALIZAR NICKNAME DEL USUARIO: </legend>  
+            <legend>ACTUALIZAR STATUS DEL USUARIO: </legend>  
             <table>  
                 <tr>  
                     <td>Usuario:</td>  
                     <td><input type="text" name="username" required="required" /></td>  
                 </tr>
                 <tr>  
-                    <td>Nuevo NickName:</td>  
-                    <td><input type="text" name="nickname" required="required" /></td>  
+                    <td>Nuevo Status:</td>  
+                    <td><input type="text" name="status" /></td>  
                 </tr>
+                <input type="hidden" value="json" name="format" />
                 <tr>  
                     <td><input type="submit" value="Actualizar" /></td>  
                 </tr>  

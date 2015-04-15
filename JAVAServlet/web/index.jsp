@@ -22,7 +22,13 @@
                     <td><a href="Eliminar.jsp">ELIMINAR</a></td>    
                 </tr>
                 <tr>  
-                    <td><a href="ActualizarNickname.jsp">ACTUALIZAR</a></td>    
+                    <td><a href="Actualizar.jsp">ACTUALIZAR NICKNAME - EMAIL</a></td>    
+                </tr>
+                <tr>  
+                    <td><a href="ActualizarPassword.jsp">ACTUALIZAR PASSWORD</a></td>    
+                </tr>
+                <tr>  
+                    <td><a href="ActualizarStatus.jsp">ACTUALIZAR STATUS</a></td>    
                 </tr>
             </table>  
         </fieldset>  

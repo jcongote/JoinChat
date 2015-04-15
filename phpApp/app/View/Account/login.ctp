@@ -46,7 +46,7 @@
                     'class' => 'form-control',
                     'placeholder' => '*********',
                     'div' => array('class' => 'form-group'),
-                    'after' => $this->Html->tag('p', $this->Html->link('¿Olvidó su contraseña?', array('action' => 'rememberPassword')))
+                    'after' => $this->Html->tag('p', $this->Html->link('¿Olvidó su clave?', array('action' => 'rememberPassword')))
                 )
             );
             echo $this->Form->submit('Entrar', array('class' => 'btn btn-primary pull-right'));
