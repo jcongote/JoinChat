@@ -28,11 +28,9 @@
     THE SOFTWARE.
 */
 
-// var chatId = false;
-var chatId = '12345';
 var localStream, remoteStream, pc, ws, channel;
 $(document).ready(function() {
-    ws = new WebSocket('ws://kladfelipe.koding.io:7000/ws/' + chatId);
+    ws = new WebSocket('ws://' + kodingUrl + ':7000/ws/' + chatId);
 
     ws.onopen = function(){
         console.info("Websocket abierto");
@@ -69,9 +67,9 @@ $(document).ready(function() {
     function init() {
         $("#video-btn").prop( "disabled", true );
         var configuration = {iceServers: [
-            { url: 'stun:kladfelipe.koding.io:3478' },
+            { url: 'stun:' + kodingUrl + ':3478' },
             {
-                url: 'turn:kladfelipe.koding.io:3479',
+                url: 'turn:' + kodingUrl + ':3479',
                 username: 'turnserver',
                 credential: 'hieKedq'
             }
@@ -286,8 +284,6 @@ $(document).ready(function() {
             msg: $("#msg").val()
         };
         channel.send(JSON.stringify(objToSend));
-        console.log(JSON.stringify(objToSend));
-        console.log(JSON.stringify(objToSend).msg);
         createMsg(true, $("#msg").val());
         $("#msg").val("");
     }

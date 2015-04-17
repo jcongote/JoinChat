@@ -117,3 +117,21 @@ CakeLog::config('error', array(
 App::uses('IniReader', 'Configure');
 Configure::config('ini', new IniReader());
 Configure::load('JoinChatConfig', 'ini');
+
+if(!defined('APPLICATION_ENV')) {
+    $fullBaseUrl = Router::url('/', true);
+    /**
+     * Se pone la segunda condición debido al balanceador presente en el koding de Felipe Calad
+     */ 
+    if (FALSE !== stripos($fullBaseUrl, 'kladfelipe') || FALSE !== stripos($fullBaseUrl, '127.0.0.1:81')) {
+        define('APPLICATION_ENV', 'production_calad');
+    } else if (FALSE !== stripos($fullBaseUrl, 'negly')) {
+        define('APPLICATION_ENV', 'production_joinner');
+    } else if (FALSE !== stripos($fullBaseUrl, 'juancho')) {
+        define('APPLICATION_ENV', 'production_juancho');
+    } else if (FALSE !== stripos($fullBaseUrl, 'azul')) {
+        define('APPLICATION_ENV', 'production_isabel');
+    } else {
+        define('APPLICATION_ENV', 'development');
+    }
+}

@@ -132,7 +132,7 @@ THE SOFTWARE. -->
                             <li>
                                 {$this->Html->link(
                                     $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-off btn btn-primary')) . $this->Html->tag('span', 'Cerrar sesión'),
-                                    array('controller' => 'Index', 'action' => 'logout'),
+                                    array('controller' => 'Account', 'action' => 'logout'),
                                     array('escape' => false)
                                 )}
                             </li>

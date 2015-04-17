@@ -29,12 +29,17 @@
  * THE SOFTWARE.
  */
  
-    $userNickname = 'Joi';
-    $title = 'Chat con ' . $userNickname;
+    $title = 'Chat con ' . $nickname;
     $this->assign('title', $title);
+
+    $users = array(AuthComponent::user('idUsuario'), $idUser);
+    sort($users);
 ?>
 <?php $this->start('script'); ?>
 <script type="text/javascript">
+    window.kodingUrl = '<?php echo Configure::read(APPLICATION_ENV . ".kodingUrl"); ?>';
+    var chatId = '<?php echo implode($users); ?>';
+
     $(document).ready(function() {
         sizeContent();
         $chatBody = $('#chat .panel-body');
@@ -82,7 +87,7 @@
         <div class="col-xs-12">
             <div id="chat" class="panel panel-primary" style="position: relative;">
                 <div class="panel-heading">
-                    <h3 class="panel-title"><?php echo $userNickname; ?><span class="label label-info pull-right">Último mensaje 2015/01/28 01:05pm</span></h3>
+                    <h3 class="panel-title"><?php echo $nickname; ?><!-- <span class="label label-info pull-right">Último mensaje 2015/01/28 01:05pm</span> --></h3>
                 </div>
                 <div class="panel-body" style="overflow-y: auto;">
                     <div id="videochat" class="row">
@@ -93,7 +98,7 @@
                         </div>
                         <div class="col-md-6 text-center">
                             <video id="remote" autoplay controls>
-                                Cámara de <?php echo $userNickname; ?>
+                                Cámara de <?php echo $nickname; ?>
                             </video>
                         </div>
                         <div id="video-id" class="col-xs-12 text-center"></div>

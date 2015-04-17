@@ -4,10 +4,6 @@
         <servlet-name>LoginServlet</servlet-name>
         <servlet-class>Servlet.LoginServlet</servlet-class>
     </servlet>
-    <servlet>
-        <servlet-name>StatusServlet</servlet-name>
-        <servlet-class>Servlet.StatusServlet</servlet-class>
-    </servlet>
     <servlet-mapping>
         <servlet-name>LoginServlet</servlet-name>
         <url-pattern>/LoginServlet</url-pattern>
@@ -52,9 +48,21 @@
         <servlet-name>ActualizarPasswordServlet</servlet-name>
         <url-pattern>/ActualizarPasswordServlet</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>StatusServlet</servlet-name>
+        <servlet-class>Servlet.StatusServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>StatusServlet</servlet-name>
         <url-pattern>/StatusServlet</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>RegresarUsuariosServlet</servlet-name>
+        <servlet-class>Servlet.RegresarUsuariosServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>RegresarUsuariosServlet</servlet-name>
+        <url-pattern>/RegresarUsuariosServlet</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

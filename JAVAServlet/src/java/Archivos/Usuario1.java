@@ -29,20 +29,26 @@
 package Archivos;
 
 public class Usuario1 {
+    String idUsuario;
     String usuario;
     String password;
     String nickname;
     String email;
     String status;
 
-    public Usuario1(String usuario, String password, String nickname, String email, String status) {
+    public Usuario1(String idUsuario, String usuario, String password, String nickname, String email, String status) {
+        this.idUsuario = idUsuario;
         this.usuario = usuario;
         this.password = password;
         this.nickname = nickname;
         this.email = email;
         this.status = status;
     }
-
+    
+    public String getidUsuario() {
+        return idUsuario;
+    }
+    
     public String getUsuario() {
         return usuario;
     }
@@ -61,6 +67,10 @@ public class Usuario1 {
 
     public String getStatus() {
         return status;
+    }
+    
+    public void setidUsuario(String idUsuario) {
+        this.idUsuario = idUsuario;
     }
     
     public void setUsuario(String usuario) {

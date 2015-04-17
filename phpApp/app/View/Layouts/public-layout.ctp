@@ -51,12 +51,22 @@ THE SOFTWARE. -->
                     <?php 
                         $flashMsg = $this->Session->flash();
                         $authMsg = $this->Session->flash('auth');
+                        $warnMsg = $this->Session->flash('warning');
 
                         if ($flashMsg) :
                     ?>
                     <div class="alert alert-dismissible alert-info">
                         <button type="button" class="close" data-dismiss="alert">×</button>
                         <?php echo $flashMsg; ?>
+                    </div>
+                    <?php 
+                        endif;
+
+                        if ($warnMsg) :
+                    ?>
+                    <div class="alert alert-dismissible alert-warning">
+                        <button type="button" class="close" data-dismiss="alert">×</button>
+                        <?php echo $warnMsg; ?>
                     </div>
                     <?php 
                         endif;

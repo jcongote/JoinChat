@@ -74,10 +74,9 @@ class AccountController extends AppController {
         return $this->redirect(array('action' => 'login'));
     }
 
-
     public function login() {
         if ($this->request->is('post')) {
-            $loginUrl = Configure::read('Database.loginUrl');
+            $loginUrl = Configure::read(APPLICATION_ENV . '.loginUrl');
 
             if (!$this->_checkDatabase($loginUrl, 'POST')) {
                 $this->Session->setFlash('Lo sentimos!!! El servicio para validar los usuarios no se encuentra disponible', $element = 'default', $params = array(), $key = 'warning');
@@ -98,9 +97,14 @@ class AccountController extends AppController {
         }
     }
 
+    public function logout() {
+        $this->Session->setFlash('Has finalizado tu sesión con éxito!');
+        return $this->redirect($this->Auth->logout());
+    }
+
     public function register() {
         if ($this->request->is('post')) {
-            $registerUrl = Configure::read('Database.registerUrl');
+            $registerUrl = Configure::read(APPLICATION_ENV . '.registerUrl');
 
             if (!$this->_checkDatabase($registerUrl, 'POST')) {
                 $this->Session->setFlash('Lo sentimos!!! El servicio para registrar nuevos usuarios no se encuentra disponible', $element = 'default', $params = array(), $key = 'warning');
@@ -112,11 +116,9 @@ class AccountController extends AppController {
                 $httpResponse = $httpSocket->post($registerUrl, $user);
                 if ($httpResponse && $httpResponse->isOk()) {
                     $jsonResponse = json_decode($httpResponse->body(), true);
+                    $this->Session->setFlash($jsonResponse['message'], $element = 'default', $params = array(), $key = 'warning');
                     if (isset($jsonResponse['success']) && $jsonResponse['success'] == true) {
-                        $this->Auth->login($this->request->data['User']);
-                        return $this->redirect($this->Auth->redirectUrl());
-                    } else {
-                        $this->Session->setFlash($jsonResponse['message'], $element = 'default', $params = array(), $key = 'warning');
+                        return $this->redirect(array('action' => 'login'));
                     }
                 } else {
                     $this->Session->setFlash('Hay un problema en el servicio para registrar nuevos usuarios', $element = 'default', $params = array(), $key = 'warning');
@@ -135,7 +137,7 @@ class AccountController extends AppController {
 
     public function edit() {
         if ($this->request->is('post')) {
-            $editUrl = Configure::read('Database.editUrl');
+            $editUrl = Configure::read(APPLICATION_ENV . '.editUrl');
 
             if (!$this->_checkDatabase($editUrl, 'POST')) {
                 $this->Session->setFlash('Lo sentimos!!! El servicio para editar el perfil no se encuentra disponible', $element = 'default', $params = array(), $key = 'warning');
@@ -168,7 +170,7 @@ class AccountController extends AppController {
 
     public function changePassword() {
         if ($this->request->is('post')) {
-            $changePasswordUrl = Configure::read('Database.changePasswordUrl');
+            $changePasswordUrl = Configure::read(APPLICATION_ENV . '.changePasswordUrl');
 
             if (!$this->_checkDatabase($changePasswordUrl, 'POST')) {
                 $this->Session->setFlash('Lo sentimos!!! El servicio para cambiar la clave no se encuentra disponible', $element = 'default', $params = array(), $key = 'warning');

@@ -1,42 +1,16 @@
-// The MIT License (MIT)
-
-// Copyright (c) 2015 
-
-// John Congote <jcongote@gmail.com>
-// Felipe Calad
-// Isabel Lozano
-// Juan Diego Perez
-// Joinner Ovalle
-
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-
 package Archivos;
 
 import java.sql.Connection;  
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.DriverManager;  
+import java.sql.PreparedStatement;  
+import java.sql.ResultSet;  
 import java.sql.SQLException;  
+import java.util.ArrayList;
   
-public class Login {  
-    public static Usuario1 validate(String name, String pass) {          
+public class RegresarUsuarios {  
+    public static ArrayList validate(String username) {          
         Usuario1 u = null;
+        ArrayList<Usuario1> UsuariosList = new ArrayList<Usuario1>();
         Connection conn = null;  
         PreparedStatement pst = null;  
         ResultSet rs = null;  
@@ -51,13 +25,12 @@ public class Login {
             Class.forName(driver).newInstance();  
             conn = DriverManager.getConnection(url + dbName, userName, password);  
   
-            pst = conn.prepareStatement("select * from Usuarios where usuario=? and password=?");  
-            pst.setString(1, name);  
-            pst.setString(2, pass);  
+            pst = conn.prepareStatement("SELECT * FROM Usuarios WHERE  usuario != ?");  
+            pst.setString(1, username);    
   
             rs = pst.executeQuery();
             
-            if (rs.next()) {
+            while (rs.next()) {  
                 String idUsuario = rs.getString("idUsuario");
                 String usuario = rs.getString("usuario");
                 String pass2 = rs.getString("password");
@@ -65,6 +38,7 @@ public class Login {
                 String email =rs.getString("email");
                 String status =rs.getString("status");
                 u=new Usuario1(idUsuario,usuario, pass2, nickname, email, status);
+                UsuariosList.add(u);
             
             }
         } catch (Exception e) {  
@@ -92,6 +66,6 @@ public class Login {
                 }  
             }  
         }  
-        return u;  
+        return UsuariosList;  
     }  
 }  

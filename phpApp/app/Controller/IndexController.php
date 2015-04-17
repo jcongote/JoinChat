@@ -30,6 +30,7 @@
  */
 
 App::uses('AppController', 'Controller');
+App::uses('HttpSocket', 'Network/Http');
 
 class IndexController extends AppController {
 
@@ -70,16 +71,31 @@ class IndexController extends AppController {
     }
 
     public function chats() {
-        
+        $retrieveUsersUrl = Configure::read(APPLICATION_ENV . '.retrieveUsersUrl');
+
+        if (!$this->_checkDatabase($retrieveUsersUrl, 'POST')) {
+            $this->Session->setFlash('Lo sentimos!!! El servicio para obtener las conversaciones previas no se encuentra disponible', $element = 'default', $params = array(), $key = 'warning');
+        } else {
+            $user = array('username' => $this->Auth->user('usuario'));
+
+            $httpSocket = new HttpSocket();
+            $httpResponse = $httpSocket->post($retrieveUsersUrl, $user);
+            if ($httpResponse && $httpResponse->isOk()) {
+                $jsonResponse = json_decode($httpResponse->body(), true);
+                if (isset($jsonResponse['success']) && $jsonResponse['success'] == true) {
+                    $this->set('users', $jsonResponse['users']);
+                } else {
+                    $this->Session->setFlash($jsonResponse['message'], $element = 'default', $params = array(), $key = 'warning');
+                }
+            } else {
+                $this->Session->setFlash('Hay un problema en el servicio para obtener las conversaciones previas', $element = 'default', $params = array(), $key = 'warning');
+            }
+        }
     }
 
-    public function logout() {
-        $this->Session->setFlash('Has finalizado tu sesión con éxito!');
-        return $this->redirect($this->Auth->logout());
-    }
-
-    public function viewChat() {
-
+    public function viewChat($idUser, $nickname) {
+        $this->set('idUser', $idUser);
+        $this->set('nickname', $nickname);
     }
 
 }

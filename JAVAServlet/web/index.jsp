@@ -30,6 +30,9 @@
                 <tr>  
                     <td><a href="ActualizarStatus.jsp">ACTUALIZAR STATUS</a></td>    
                 </tr>
+                <tr>  
+                    <td><a href="RegresarUsuarios.jsp">REGRESAR USUARIOS</a></td>    
+                </tr>
             </table>  
         </fieldset>  
     </form>  

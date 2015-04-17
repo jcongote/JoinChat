@@ -63,6 +63,7 @@ public class LoginServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 json.put("success", true);
                 JSONObject user = new JSONObject();
+                user.put("idUsuario", u.getidUsuario());
                 user.put("usuario", u.getUsuario());
                 user.put("password", u.getPassword());
                 user.put("nickname",u.getNickname());
