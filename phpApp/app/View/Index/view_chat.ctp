@@ -111,7 +111,8 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-xs-12">
-                                <button id="video-btn" class="pull-left btn btn-success btn-xs glyphicon glyphicon-facetime-video"></button>
+                                <button id="video-btn" class="pull-left btn btn-success btn-xs glyphicon glyphicon-facetime-video" disabled="disabled"></button>
+                                <button id="file-btn" class="pull-left btn btn-success btn-xs glyphicon glyphicon-paperclip" disabled="disabled"></button>
                             </div>
                         </div>
                         <div class="row">
@@ -130,3 +131,4 @@
         </div>
     </div>
 </div>
+<input type="file" id="file-input" style="display: none;">
