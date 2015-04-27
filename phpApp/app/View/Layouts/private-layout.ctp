@@ -256,7 +256,8 @@ NAV;
         <?php
             echo $this->Html->script('jquery-1.11.2.min');
             echo $this->Html->script('bootstrap.min');
-            echo $this->Html->script('ydn.db-is-core-qry');
+            
+            echo $this->element('localDb');
         ?>
         <script type='text/javascript'>
             $('#menu-toggle').click(function(e) {
@@ -268,58 +269,6 @@ NAV;
                     $(this).remove();
                 });
             });
-
-            <?php if (AuthComponent::user('guest') && AuthComponent::user('guest') == true) : ?>
-                var guest, db;
-
-                $(document).ready(function() {
-                    var schema = {
-                      autoSchema: false,
-                      stores: [{
-                        name: 'guest',
-                        autoIncrement: false,
-                        indexes: [
-                            {
-                                name: 'nickname'
-                            },
-                            {
-                                name: 'email'
-                            }
-                        ]
-                      }]
-                    };
-                    db = new ydn.db.Storage('joinchat', schema);
-
-                    function init() {
-                        db.get('guest', 1)
-                            .done(function(record) {
-                                if (record) {
-                                    guest = record;
-                                    guestFound = guestFound || function() {};
-                                    if (guestFound) {
-                                        guestFound();
-                                    }
-                                }
-                            })
-                            .fail(function(e) {
-                                console.log(e.message);
-                            });
-                    }
-
-                    function guestFound() {
-                        if ($userNickname = $("#UserNickname")) {
-                            $userNickname.val(guest.nickname);
-                        }
-                        if ($userEmail = $("#UserEmail")) {
-                            $userEmail.val(guest.email);
-                        }
-                    }
-
-                    db.onReady(function() {
-                      init();
-                    });
-                });
-            <?php endif; ?>
         </script>
         <?php echo $this->fetch('script'); ?>
     </body>

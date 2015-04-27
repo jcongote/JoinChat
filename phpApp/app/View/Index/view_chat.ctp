@@ -38,24 +38,7 @@
 <?php $this->start('script'); ?>
 <script type="text/javascript">
     window.kodingUrl = '<?php echo Configure::read(APPLICATION_ENV . ".kodingUrl"); ?>';
-    var chatId = '<?php echo implode($users); ?>';
-
-    $(document).ready(function() {
-        sizeContent();
-        $chatBody = $('#chat .panel-body');
-        $chatBody.scrollTop($chatBody[0].scrollHeight);
-    });
-
-    $(window).resize(sizeContent);
-
-    function sizeContent() {
-        var contentPadding = 20;
-
-        $chat = $("#chat");
-        var chatHeight = $(window).height() - 2 * contentPadding - 20;
-        $chat.css('height', chatHeight);
-        $('.panel-body', $chat).css('maxHeight', chatHeight - $(".panel-heading", $chat).height() - $(".panel-footer", $chat).height() - 46);
-    }
+    var chatId = '<?php echo implode($users); ?>';    
 </script>
 <?php
     echo $this->Html->script('webrtc-adapter.js');
@@ -65,6 +48,10 @@
     $this->start('style');
 ?>
 <style type="text/css">
+    body {
+        min-height: 300px;
+    }
+
     #videochat {
         border-bottom: 4px solid #e7e7e7;
         margin-bottom: 10px;

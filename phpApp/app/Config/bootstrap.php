@@ -135,3 +135,7 @@ if(!defined('APPLICATION_ENV')) {
         define('APPLICATION_ENV', 'development');
     }
 }
+
+function isProduction() {
+    return (APPLICATION_ENV === 'development') ? false : true;
+}

@@ -28,14 +28,40 @@
     THE SOFTWARE.
 */
 
+$(window).resize(sizeContent);
+
+function sizeContent() {
+    var contentPadding = 20;
+
+    $chat = $("#chat");
+    var chatHeight;
+    if ($(window).height() < 300) {
+        chatHeight = $('body').height() - 2 * contentPadding - 20;
+    } else {
+        chatHeight = $(window).height() - 2 * contentPadding - 20;
+    }
+    
+    $chat.css('height', chatHeight);
+    $('.panel-body', $chat).css('maxHeight', chatHeight - $(".panel-heading", $chat).height() - $(".panel-footer", $chat).height() - 46);
+}
+
+function scrollDownChat() {
+    $chatBody = $('#chat .panel-body');
+    $chatBody.scrollTop($chatBody[0].scrollHeight);
+}
+
 var localStream, remoteStream, pc, ws, channel;
 $(document).ready(function() {
+    sizeContent();
+    scrollDownChat();
+
     ws = new WebSocket('ws://' + kodingUrl + ':7000/ws/chat' + chatId);
 
     ws.onopen = function(){
         console.info("Websocket abierto");
     }
     ws.onclose = function (evt){
+        enableChatFields(false);
         console.info("Websockect cerrado");
     }
     var initiator;
@@ -121,42 +147,57 @@ $(document).ready(function() {
                 }
                 window[commandParts[0]][commandParts[1]](args);
             }
-            if (objReceived.msg) {
-                var msg = objReceived.msg;
-                console.info(evt);
-                createMsg(false, msg);
-            }
-            if (objReceived.file) {
-                if (!receiving) {
-                    var fileBtn = $("#file-btn");
-                    fileBtn.prop('disabled', true);
-                    fileBtn.html('<span style="margin-left: 5px">Recibiendo...</span>');
-                    receiving = true;
+
+            if (objReceived.msg || objReceived.file) {
+                var historyObj = historyObj = {
+                    'chatId': chatId,
+                    'timestamp': new Date().getTime(),
+                    'received': 1
+                };
+            
+                if (objReceived.msg) {
+                    var msg = objReceived.msg;
+                    console.info(evt);
+
+                    historyObj.message = msg;
+                    historyObj.type = 'message';
+                    if (db) {
+                        db.put('history', historyObj);
+                    }
+                    
+                    createMsg(false, msg);
                 }
-                if (objReceived.file.name) {
-                    filename = objReceived.file.name;
-                }
-                arrayToStoreChunks.push(objReceived.file.content);
-                if (objReceived.file.last) {
-                    var msg = $("<div>");
-                    var fileTitle = $("<span>").html('<b>Archivo:</b> ');
-                    var fileLink = $("<a></a>").attr('href', arrayToStoreChunks.join(''))
-                                .attr('target', '_blank')
-                                .attr('download', filename)
-                                .html(filename);
+                if (objReceived.file) {
+                    if (!receiving) {
+                        var fileBtn = $("#file-btn");
+                        fileBtn.prop('disabled', true);
+                        fileBtn.html('<span style="margin-left: 5px">Recibiendo...</span>');
+                        receiving = true;
+                    }
+                    if (objReceived.file.name) {
+                        filename = objReceived.file.name;
+                    }
+                    arrayToStoreChunks.push(objReceived.file.content);
+                    if (objReceived.file.last) {
+                        var fileContent = arrayToStoreChunks.join('');
 
-                    msg.append(fileTitle);
-                    msg.append(fileLink);
+                        historyObj.message = fileContent;
+                        historyObj.type = 'file';
+                        historyObj.filename = filename;
+                        if (db) {
+                            db.put('history', historyObj);
+                        }
 
-                    createMsg(false, msg, false);
+                        createFileMsg(false, fileContent, filename);
 
-                    filename = '';
-                    arrayToStoreChunks = [];
-                    receiving = false;
+                        filename = '';
+                        arrayToStoreChunks = [];
+                        receiving = false;
 
-                    var fileBtn = $("#file-btn");
-                    fileBtn.prop('disabled', false);
-                    fileBtn.html('');
+                        var fileBtn = $("#file-btn");
+                        fileBtn.prop('disabled', false);
+                        fileBtn.html('');
+                    }
                 }
             }
         };
@@ -320,6 +361,18 @@ $(document).ready(function() {
             msg: $("#msg").val()
         };
         channel.send(JSON.stringify(objToSend));
+
+        if (db) {
+            var historyObj = historyObj = {
+                'chatId': chatId,
+                'timestamp': new Date().getTime(),
+                'message': objToSend.msg,
+                'type': 'message',
+                'received': 0
+            };
+            db.put('history', historyObj);
+        }
+            
         createMsg(true, $("#msg").val());
         $("#msg").val("");
     }
@@ -407,6 +460,7 @@ $(document).ready(function() {
 
     var chunkLength = 1000;
     var timeoutFn;
+    var currentFileText = null;
     function onReadAsDataURL(event, text) {
         var objToSend = {
             'file': {}
@@ -414,6 +468,7 @@ $(document).ready(function() {
 
         if (event) {
             text = event.target.result; // on first invocation
+            currentFileText = text;
             objToSend.file.name = filename;
         }
 
@@ -433,11 +488,26 @@ $(document).ready(function() {
             }, 500);
         } else {
             clearTimeout(timeoutFn);
+            if (db) {
+                var historyObj = historyObj = {
+                    'chatId': chatId,
+                    'timestamp': new Date().getTime(),
+                    'message': currentFileText,
+                    'type': 'file',
+                    'filename': filename,
+                    'received': 0
+                };
+                db.put('history', historyObj);
+            }
+
+            createFileMsg(true, currentFileText, filename);
+
             filename = '';
             var fileBtn = $("#file-btn");
             fileBtn.prop('disabled', false);
             fileBtn.html('');
             $('#file-input').val('');
+            currentFileText = null;
         }
     }
 });
@@ -453,7 +523,22 @@ function randomString() {
     return randomstring;
 }
 
-function createMsg(localUser, msg, escape) {
+function createFileMsg(localUser, fileContent, filename, date) {
+    var fn = filename || 'file';
+    var msg = $("<div>");
+    var fileTitle = $("<span>").html('<b>Archivo:</b> ');
+    var fileLink = $("<a></a>").attr('href', fileContent)
+                .attr('target', '_blank')
+                .attr('download', fn)
+                .html(fn);
+
+    msg.append(fileTitle);
+    msg.append(fileLink);
+
+    createMsg(localUser, msg, false, date);
+}
+
+function createMsg(localUser, msg, escape, date) {
     var containerClass;
     if (!localUser) {
         containerClass = 'bubble-left';
@@ -461,23 +546,83 @@ function createMsg(localUser, msg, escape) {
         containerClass = 'bubble-right';
     }
 
-    escape = typeof(escape) === 'undefined' ? true : escape;
+    if (typeof(date) === 'undefined') {
+        date = new Date();
+    }
+
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+    hours = (hours % 12) ? hours % 12 : 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    seconds = seconds < 10 ? '0' + seconds : seconds;
+    var strTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+
+    var today = new Date();
+    var yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    var timeString;
+    if (date.toDateString() === today.toDateString()) {
+        timeString = 'Hoy, ' + strTime;
+    } else if (date.toDateString() === yesterday.toDateString()) {
+        timeString = 'Ayer, ' + strTime;
+    } else {
+        var monthNames = [
+            "Ene", "Feb", "Mar",
+            "Abr", "May", "Jun", "Jul",
+            "Ago", "Sep", "Oct",
+            "Nov", "Dic"
+        ];
+        var date = new Date();
+        var day = date.getDate();
+        var monthIndex = date.getMonth();
+        var year = date.getFullYear();
+
+        timeString = strTime + ' - ' + monthNames[monthIndex] + ' ' + day + ', ' + year;
+    }
+
+    escape = (typeof(escape) === 'undefined') ? true : escape;
     if (escape) {
         msg = msg.replace(/(\r[\n]?)|(\n[\r]?)/, "<br>");
     }
 
     var $msgContainer = $("<div>").addClass('bubble').addClass(containerClass);
+    var $timeContainer = $("<span>").addClass('time').html(timeString);
     if (jQuery.type(msg) === 'string') {
-        $msgContainer.html("<div class='pointer'></div>" + msg);
+        $msgContainer.html("<div class='pointer'></div>" + msg).append($timeContainer);
     } else {
-        $msgContainer.append("<div class='pointer'></div>").append(msg);
+        $msgContainer.append("<div class='pointer'></div>").append(msg.append($timeContainer));
     }
     
     $("#textchat").append($msgContainer);
+    scrollDownChat();
 }
 
-function enableChatFields() {
-    $("#msg").prop('disabled', false);
-    $("#sendChatBtn").prop('disabled', false);
-    $("#file-btn").prop('disabled', false);
+function enableChatFields(enabled) {
+    var disabled = typeof(enabled) === 'undefined' ? false : !enabled;
+    $("#msg").prop('disabled', disabled);
+    $("#sendChatBtn").prop('disabled', disabled);
+    $("#file-btn").prop('disabled', disabled);
+}
+
+function afterInit() {
+    var maxMsgsToRetrieve = 15;
+    db.from('history')
+        .where('chatId', '=', chatId.toString())
+        .reverse()
+        .list(maxMsgsToRetrieve)
+        .done(
+            function(messages) {
+                for (var i = messages.length - 1; i >= 0; i--) {
+                    var message = messages[i];
+                    if (message.type === 'message') {
+                        createMsg(!message.received, message.message, true, new Date(message.timestamp));
+                    } else {
+                        createFileMsg(!message.received, message.message, message.filename, new Date(message.timestamp));
+                    }
+                };
+            }
+        );
 }

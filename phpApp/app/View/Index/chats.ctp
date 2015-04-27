@@ -37,7 +37,7 @@
 <script type="text/javascript">
     $(document).ready(function() {
         $(".chat-preview").click(function(event) {
-            location = $(this).attr('href');
+            window.location = $(this).attr('href');
         });
     });
 </script>
