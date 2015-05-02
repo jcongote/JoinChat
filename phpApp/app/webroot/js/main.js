@@ -236,13 +236,25 @@ $(document).ready(function() {
                 };
                 init();
             }
+            else if (typeof(initiatorCall) == undefined){
+                var signal = JSON.parse(event.data);
+                if (signal.sdp) {
+                    if (initiator) {
+                        receiveAnswer(signal);
+                    } else {
+                        receiveOffer(signal);
+                    }
+                } else if (signal.candidate) {
+                    pc.addIceCandidate(new RTCIceCandidate(signal));
+                }
+            }
             else{
                 if (initiator) {
                     $("#video-btn").prop( "disabled", false );
                 };
                 var signal = JSON.parse(event.data);
                 if (signal.sdp) {
-                    if (initiator) {
+                    if (initiatorCall) {
                         receiveAnswer(signal);
                     } else {
                         receiveOffer(signal);
