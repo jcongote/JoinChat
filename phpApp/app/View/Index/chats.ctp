@@ -114,6 +114,21 @@
         return timeString;
     }
 
+    function createFileMsg(localUser, fileContent, filename, date, chatContainer) {
+        var fn = filename || 'file';
+        var msg = $("<div>");
+        var fileTitle = $("<span>").html('<b>Archivo:</b> ');
+        var fileLink = $("<a></a>").attr('href', fileContent)
+                    .attr('target', '_blank')
+                    .attr('download', fn)
+                    .html(fn);
+
+        msg.append(fileTitle);
+        msg.append(fileLink);
+
+        createMsg(localUser, msg, false, date, chatContainer);
+    }
+
     function createMsg(localUser, msg, escape, date, chatContainer) {
         var containerClass;
         if (!localUser) {
