@@ -29,7 +29,7 @@
  * THE SOFTWARE.
  */
  
-    $title = 'Mis conversaciones';
+    $title = 'Conversaciones';
     $this->assign('title', $title);
 
     $this->start('script');
@@ -40,6 +40,118 @@
             window.location = $(this).attr('href');
         });
     });
+
+    function afterInit() {
+        var maxMsgsToRetrieve = 5;
+        
+        $("div.chat-preview").each(function(index, chatContainer) {
+            var chatId = $(chatContainer).data('chat-id');
+            var bubbleChatContainer = $("div.panel-body", "div.chat-preview[data-chat-id=" + chatId + "]");
+            var lastChatContainer = $("div.panel-footer", "div.chat-preview[data-chat-id=" + chatId + "]");
+            db.from('history')
+                .where('chatId', '=', chatId.toString())
+                .reverse()
+                .list(maxMsgsToRetrieve)
+                .done(
+                    function(messages) {
+                        if (!messages.length) {
+                            bubbleChatContainer.html('<div class="empty-msgs">No hay mensajes previos</div>');
+                        }
+                        for (var i = messages.length - 1; i >= 0; i--) {
+                            var message = messages[i];
+                            if (message.type === 'message') {
+                                createMsg(!message.received, message.message, true, new Date(message.timestamp), bubbleChatContainer);
+                            } else {
+                                createFileMsg(!message.received, message.message, message.filename, new Date(message.timestamp), bubbleChatContainer);
+                            }
+                            if (i === 0) {
+                                lastChatContainer.html('<span class="label label-info">Último mensaje ' + getTimestring(new Date(message.timestamp)) + '</span>');
+                            }
+                        };
+                    }
+                );
+        });
+    }
+
+    function getTimestring(date) {
+        if (typeof(date) === 'undefined') {
+            date = new Date();
+        }
+
+        var hours = date.getHours();
+        var minutes = date.getMinutes();
+        var seconds = date.getSeconds();
+        var ampm = hours >= 12 ? 'p.m.' : 'a.m.';
+        hours = (hours % 12) ? hours % 12 : 12;
+        minutes = minutes < 10 ? '0' + minutes : minutes;
+        seconds = seconds < 10 ? '0' + seconds : seconds;
+        var strTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+
+        var today = new Date();
+        var yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+
+        var timeString;
+        if (date.toDateString() === today.toDateString()) {
+            timeString = 'Hoy, ' + strTime;
+        } else if (date.toDateString() === yesterday.toDateString()) {
+            timeString = 'Ayer, ' + strTime;
+        } else {
+            var monthNames = [
+                "Ene", "Feb", "Mar",
+                "Abr", "May", "Jun", "Jul",
+                "Ago", "Sep", "Oct",
+                "Nov", "Dic"
+            ];
+            var date = new Date();
+            var day = date.getDate();
+            var monthIndex = date.getMonth();
+            var year = date.getFullYear();
+
+            timeString = strTime + ' - ' + monthNames[monthIndex] + ' ' + day + ', ' + year;
+        }
+
+        return timeString;
+    }
+
+    function createFileMsg(localUser, fileContent, filename, date, chatContainer) {
+        var fn = filename || 'file';
+        var msg = $("<div>");
+        var fileTitle = $("<span>").html('<b>Archivo:</b> ');
+        var fileLink = $("<a></a>").attr('href', fileContent)
+                    .attr('target', '_blank')
+                    .attr('download', fn)
+                    .html(fn);
+
+        msg.append(fileTitle);
+        msg.append(fileLink);
+
+        createMsg(localUser, msg, false, date, chatContainer);
+    }
+
+    function createMsg(localUser, msg, escape, date, chatContainer) {
+        var containerClass;
+        if (!localUser) {
+            containerClass = 'bubble-left';
+        } else {
+            containerClass = 'bubble-right';
+        }
+
+        escape = (typeof(escape) === 'undefined') ? true : escape;
+        if (escape) {
+            msg = msg.replace(/(\r[\n]?)|(\n[\r]?)/, "<br>");
+        }
+
+        var $msgContainer = $("<div>").addClass('bubble').addClass(containerClass);
+        var $timeContainer = $("<span>").addClass('time').html(getTimestring(date));
+        if (jQuery.type(msg) === 'string') {
+            $msgContainer.append($timeContainer).append("<div class='pointer'></div>" + msg);
+        } else {
+            $msgContainer.append($timeContainer).append(msg).append("<div class='pointer'></div>");
+        }
+        
+        chatContainer.append($msgContainer);
+    }
 </script>
 <?php
     $this->end();
@@ -67,18 +179,19 @@
                     echo '<h4>No hay chats disponibles</h4>';
                 }
 
-                foreach ($users as $user) :
+                foreach ($users as $i => $user) :
+                    if ($i !== 0 && $i % 4 === 0) {
+                        echo "</div><div class='row'>";
+                    }
+                    $chatUsers = array(AuthComponent::user('idUsuario'), $user['idUsuario']);
+                    sort($chatUsers);
         ?>
-        <div class="col-md-3">
-            <div class="panel panel-primary chat-preview" href="<?php echo $this->Html->url(array('controller' => 'index', 'action' => 'viewChat', $user['idUsuario'], $user['nickname'])); ?>">
+        <div class="col-md-3 chat">
+            <div class="panel panel-primary chat-preview" href="<?php echo $this->Html->url(array('controller' => 'index', 'action' => 'viewChat', $user['idUsuario'], $user['nickname'])); ?>" data-chat-id="<?php echo implode($chatUsers); ?>">
                 <div class="panel-heading">
                     <h3 class="panel-title"><?php echo $user['nickname']; ?></h3>
                 </div>
-                <div class="panel-body">
-                    <div class="empty-msgs">
-                        No hay mensajes previos
-                    </div>
-                </div>
+                <div class="panel-body"></div>
                 <div class="panel-footer text-right">
                     <!-- <span class="label label-info">Último mensaje 2015/01/28 01:05pm</span> -->
                 </div>

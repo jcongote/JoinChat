@@ -50,7 +50,6 @@ THE SOFTWARE. -->
                 <?php 
                     $links = array(
                         'index' => array('class' => '', 'html' => ''),
-                        'newchat' => array('class' => '', 'html' => ''),
                         'chats' => array('class' => '', 'html' => ''),
                         'settings' => array('class' => '', 'html' => ''),
                         'register' => array('class' => '', 'html' => '')
@@ -69,13 +68,8 @@ THE SOFTWARE. -->
                     }
 
                     if ($guest) {
-                        $links['newchat']['html'] = $this->Html->link(
-                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-plus btn btn-primary')) . $this->Html->tag('span', 'Nueva conversación'),
-                            '#',
-                            array('escape' => false, 'class' => $links['newchat']['class'], 'data-toggle' => 'modal', 'data-target' => '#guest-modal')
-                        );
                         $links['chats']['html'] = $this->Html->link(
-                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-comment btn btn-primary')) . $this->Html->tag('span', 'Mis conversaciones'),
+                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-comment btn btn-primary')) . $this->Html->tag('span', 'Conversaciones'),
                             '#',
                             array('escape' => false, 'class' => $links['chats']['class'], 'data-toggle' => 'modal', 'data-target' => '#guest-modal')
                         );
@@ -90,13 +84,8 @@ THE SOFTWARE. -->
                             '/index',
                             array('escape' => false, 'class' => $links['index']['class'])
                         );
-                        $links['newchat']['html'] = $this->Html->link(
-                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-plus btn btn-primary')) . $this->Html->tag('span', 'Nueva conversación'),
-                            '#',
-                            array('escape' => false, 'class' => $links['newchat']['class'], 'data-toggle' => 'modal', 'data-target' => '#new-chat-modal')
-                        );
                         $links['chats']['html'] = $this->Html->link(
-                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-comment btn btn-primary')) . $this->Html->tag('span', 'Mis conversaciones'),
+                            $this->Html->tag('span', '', array('class' => 'icon glyphicon glyphicon-comment btn btn-primary')) . $this->Html->tag('span', 'Conversaciones'),
                             '/index/chats',
                             array('escape' => false, 'class' => $links['chats']['class'])
                         );
@@ -120,9 +109,6 @@ THE SOFTWARE. -->
                                 {$links['index']['html']}
                             </li>
                             {$links['register']['html']}
-                            <li>
-                                {$links['newchat']['html']}
-                            </li>
                             <li>
                                 {$links['chats']['html']}
                             </li>
@@ -178,64 +164,6 @@ NAV;
             </div>
         </div>
 
-        <!-- Modal -->
-        <div class="modal fade" id="new-chat-modal" tabindex="-1" role="dialog" aria-labelledby="new-chat-modal" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                        <h4 class="modal-title" id="myModalLabel">Contactos</h4>
-                    </div>
-                    <div class="modal-body">
-                        <?php
-                            // echo $this->Form->create($model = 'Contact', $options = array('type' => 'get', 'url' => array('controller' => 'contacts', 'action' => 'search')));
-                            echo $this->Form->input('nicknameEmail', array(
-                                    'type' => 'text',
-                                    'label' => 'Alias / Correo',
-                                    'class' => 'form-control',
-                                    'div' => array('class' => 'form-group')
-                                )
-                            );
-                            // echo $this->Form->end($options = null);
-                        ?>
-                        <div class="list-group">
-                            <a href="#" class="list-group-item">Contacto 1</a>
-                            <a href="#" class="list-group-item">Contacto 2</a>
-                            <a href="#" class="list-group-item">Contacto 3</a>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <ul id="chat-participants" class="list-inline pull-left">
-                            <li class="contact-label">
-                                <span class="contact-remove">&times;</span>
-                                Default
-                            </li>
-                            <li class="contact-label">
-                                <span class="contact-remove">&times;</span>
-                                Contacto 5
-                            </li>
-                            <li class="contact-label">
-                                <span class="contact-remove">&times;</span>
-                                Default
-                            </li>
-                            <li class="contact-label">
-                                <span class="contact-remove">&times;</span>
-                                Contacto 5
-                            </li>
-                            <li class="contact-label">
-                                <span class="contact-remove">&times;</span>
-                                Default
-                            </li>
-                            <li class="contact-label">
-                                <span class="contact-remove">&times;</span>
-                                Contacto 5
-                            </li>
-                        </ul>
-                        <button type="button" class="btn btn-primary">Empezar chat</button>
-                    </div>
-                </div>
-            </div>
-        </div>
         <div class="modal fade" id="guest-modal" tabindex="-1" role="dialog" aria-labelledby="guest-modal" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
@@ -263,11 +191,6 @@ NAV;
             $('#menu-toggle').click(function(e) {
                 e.preventDefault();
                 $('#wrapper').toggleClass('toggled');
-            });
-            $('.contact-remove').click(function(e) {
-                $(this).parent().fadeOut(200, function() {
-                    $(this).remove();
-                });
             });
         </script>
         <?php echo $this->fetch('script'); ?>
