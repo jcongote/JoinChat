@@ -145,9 +145,9 @@
         var $msgContainer = $("<div>").addClass('bubble').addClass(containerClass);
         var $timeContainer = $("<span>").addClass('time').html(getTimestring(date));
         if (jQuery.type(msg) === 'string') {
-            $msgContainer.html("<div class='pointer'></div>" + msg).append($timeContainer);
+            $msgContainer.append($timeContainer).append("<div class='pointer'></div>" + msg);
         } else {
-            $msgContainer.append("<div class='pointer'></div>").append(msg.append($timeContainer));
+            $msgContainer.append(msg.append($timeContainer)).append("<div class='pointer'></div>");
         }
         
         chatContainer.append($msgContainer);
