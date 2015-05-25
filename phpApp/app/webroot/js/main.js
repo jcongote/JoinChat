@@ -470,7 +470,7 @@ $(document).ready(function() {
         }
     });
 
-    var chunkLength = 1000;
+    var chunkLength = 1050;
     var timeoutFn;
     var currentFileText = null;
     function onReadAsDataURL(event, text) {
@@ -605,7 +605,7 @@ function createMsg(localUser, msg, escape, date) {
     if (jQuery.type(msg) === 'string') {
         $msgContainer.append($timeContainer).append("<div class='pointer'></div>" + msg);
     } else {
-        $msgContainer.append(msg.append($timeContainer)).append("<div class='pointer'></div>");
+        $msgContainer.append($timeContainer).append(msg).append("<div class='pointer'></div>");
     }
     
     $("#textchat").append($msgContainer);

@@ -42,7 +42,7 @@
     });
 
     function afterInit() {
-        var maxMsgsToRetrieve = 3;
+        var maxMsgsToRetrieve = 5;
         
         $("div.chat-preview").each(function(index, chatContainer) {
             var chatId = $(chatContainer).data('chat-id');
@@ -147,7 +147,7 @@
         if (jQuery.type(msg) === 'string') {
             $msgContainer.append($timeContainer).append("<div class='pointer'></div>" + msg);
         } else {
-            $msgContainer.append(msg.append($timeContainer)).append("<div class='pointer'></div>");
+            $msgContainer.append($timeContainer).append(msg).append("<div class='pointer'></div>");
         }
         
         chatContainer.append($msgContainer);
